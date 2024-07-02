@@ -12,8 +12,17 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include <time.h>
 
 #include "c.h"
+
+// 定义睡眠函数，接收微秒数
+static void sleep_us(unsigned int microseconds) {
+	struct timespec ts;
+	ts.tv_sec = microseconds / 1000000;
+	ts.tv_nsec = (microseconds % 1000000) * 1000;
+	nanosleep(&ts, NULL);
+}
 
 static inline int write_all(int fd, const void *buf, size_t count)
 {
@@ -29,7 +38,7 @@ static inline int write_all(int fd, const void *buf, size_t count)
 		} else if (errno != EINTR && errno != EAGAIN)
 			return -1;
 		if (errno == EAGAIN)	/* Try later, *sigh* */
-			usleep(10000);
+			sleep_us(10000);
 	}
 	return 0;
 }
@@ -49,7 +58,7 @@ static inline int fwrite_all(const void *ptr, size_t size,
 		} else if (errno != EINTR && errno != EAGAIN)
 			return -1;
 		if (errno == EAGAIN)	/* Try later, *sigh* */
-			usleep(10000);
+			sleep_us(10000);
 	}
 	return 0;
 }
